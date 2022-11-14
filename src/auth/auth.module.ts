@@ -8,6 +8,7 @@ import { JwtModule } from '@nestjs/jwt/dist';
 import { JwtConstants } from './constants';
 
 @Module({
+  exports: [AuthService],
   providers: [AuthService, LocalStrategy, LocalGuard],
   imports: [
     UsersModule,
