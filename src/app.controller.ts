@@ -1,12 +1,15 @@
 import { Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Request } from 'express';
-import { AuthGuard } from '@nestjs/passport';
 import LocalGuard from './auth/local-auth.guard';
+import { AuthService } from './auth/auth.service';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+    private readonly authService: AuthService,
+  ) {}
 
   @Get()
   getHello(): string {
@@ -16,6 +19,6 @@ export class AppController {
   @UseGuards(LocalGuard)
   @Post('auth/login')
   login(@Req() req: Request) {
-    return req.body;
+    return this.authService.login(req.user);
   }
 }
