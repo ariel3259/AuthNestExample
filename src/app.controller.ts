@@ -3,6 +3,7 @@ import { AppService } from './app.service';
 import { Request } from 'express';
 import LocalGuard from './auth/local-auth.guard';
 import { AuthService } from './auth/auth.service';
+import JwtGuard from './auth/jwt-auth.guard';
 
 @Controller()
 export class AppController {
@@ -20,5 +21,11 @@ export class AppController {
   @Post('auth/login')
   login(@Req() req: Request) {
     return this.authService.login(req.user);
+  }
+
+  @UseGuards(JwtGuard)
+  @Get('profile')
+  profile(@Req() req: Request) {
+    return req.user;
   }
 }

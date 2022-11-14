@@ -8,27 +8,31 @@ import {
   Query,
   Param,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import Page from 'src/dto/page.dto';
 import Articles from './articles.model';
 import { ArticlesService } from './articles.service';
 import ArticlesDto from './dto/articles.dto';
+import JwtGuard from 'src/auth/jwt-auth.guard';
+import { InternalServerErrorException } from '@nestjs/common';
 import { Response } from 'express';
 
+@UseGuards(JwtGuard)
 @Controller('api/articles')
 export class ArticlesController {
   constructor(private readonly service: ArticlesService) {}
 
   @Get()
   async getAll(
-    @Query('offset') offset: number,
-    @Query('limit') limit: number,
-    @Res() res: Response,
-  ): Promise<ArticlesDto[] | { message: string }> {
+    @Query('offset') offset: string,
+    @Query('limit') limit: string,
+    @Res() res: Response<ArticlesDto[]>,
+  ): Promise<void> {
     try {
       const paginatedArticles: Page<Articles> = await this.service.getAll(
-        offset,
-        limit,
+        parseInt(offset),
+        parseInt(limit),
       );
       const articlesResponse: ArticlesDto[] = paginatedArticles.elements.map(
         (e: Articles) => ({
@@ -42,20 +46,16 @@ export class ArticlesController {
       res.set({
         'x-total-count': paginatedArticles.totalItems,
       });
-      return articlesResponse;
+      res.json(articlesResponse);
     } catch (err) {
       const message: string =
         err instanceof Error ? err.message : 'unknown error';
-      res.status(500);
-      return { message };
+      throw new InternalServerErrorException(message);
     }
   }
 
   @Post()
-  async save(
-    @Body() request: ArticlesDto,
-    @Res() res: Response,
-  ): Promise<ArticlesDto | { message: string }> {
+  async save(@Body() request: ArticlesDto): Promise<ArticlesDto> {
     try {
       const articleSaved: Articles = await this.service.save(request);
       return {
@@ -68,8 +68,7 @@ export class ArticlesController {
     } catch (err) {
       const message: string =
         err instanceof Error ? err.message : 'unknown error';
-      res.status(500);
-      return { message };
+      throw new InternalServerErrorException(message);
     }
   }
 
@@ -77,8 +76,7 @@ export class ArticlesController {
   async update(
     @Body() request: ArticlesDto,
     @Param('id') id: number,
-    @Res() res: Response,
-  ): Promise<ArticlesDto | { message: string }> {
+  ): Promise<ArticlesDto> {
     try {
       const articleModified: Articles = await this.service.update(request, id);
       return {
@@ -91,24 +89,19 @@ export class ArticlesController {
     } catch (err) {
       const message: string =
         err instanceof Error ? err.message : 'unknown error';
-      res.status(500);
-      return { message };
+      throw new InternalServerErrorException(message);
     }
   }
 
   @Delete(':id')
-  async delete(
-    @Param('id') id: number,
-    @Res() res: Response,
-  ): Promise<void | { message: string }> {
+  async delete(@Param('id') id: number, @Res() res: Response): Promise<void> {
     try {
       await this.service.delete(id);
-      res.status(204);
+      res.status(204).json(null);
     } catch (err) {
       const message: string =
         err instanceof Error ? err.message : 'unknown message';
-      res.status(500);
-      return { message };
+      throw new InternalServerErrorException(message);
     }
   }
 }
