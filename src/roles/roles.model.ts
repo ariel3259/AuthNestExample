@@ -1,4 +1,5 @@
-import { Model, Table, Column } from 'sequelize-typescript';
+import { Model, Table, Column, ForeignKey } from 'sequelize-typescript';
+import Users from 'src/users/user.model';
 
 @Table
 export default class Roles extends Model {
@@ -6,4 +7,6 @@ export default class Roles extends Model {
   name: string;
   @Column({ defaultValue: true })
   state: boolean;
+  @ForeignKey(() => Users)
+  userId: number;
 }

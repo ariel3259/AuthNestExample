@@ -10,4 +10,5 @@ export default class UsersDto {
   name: string;
   @IsNotEmpty()
   lastName: string;
+  roles: string;
 }
