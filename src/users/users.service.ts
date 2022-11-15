@@ -1,23 +1,27 @@
 import { Injectable } from '@nestjs/common';
-
-export type User = any;
+import { InjectModel } from '@nestjs/sequelize';
+import UsersDto from './dto/user.dto';
+import Users from './user.model';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-  private readonly users: User[] = [
-    {
-      id: 1,
-      username: 'john',
-      password: 'changeme',
-    },
-    {
-      id: 2,
-      username: 'maria',
-      password: 'guess',
-    },
-  ];
+  constructor(
+    @InjectModel(Users) private readonly userRepository: typeof Users,
+  ) {}
 
-  findOne(username: string): Promise<User | undefined> {
-    return this.users.find((x) => x.username == username);
+  async findOne(username: string): Promise<Users | undefined> {
+    return await this.userRepository.findOne({
+      where: {
+        username: username,
+        active: true,
+      },
+    });
+  }
+
+  async register(userDto: UsersDto): Promise<void> {
+    const salt: string = await bcrypt.genSalt(12);
+    userDto.password = await bcrypt.hash(userDto.password, salt);
+    await this.userRepository.create({ ...userDto });
   }
 }

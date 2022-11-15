@@ -6,8 +6,10 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import Articles from './articles/articles.model';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
-import { AuthModule } from './auth/auth.module';
-import { RolesModule } from './roles/roles.module';
+import { AuthModule } from './authentication/auth.module';
+import Users from './users/user.model';
+import RolesModule from './roles/roles.module';
+import Roles from './roles/roles.model';
 
 @Module({
   imports: [
@@ -20,9 +22,8 @@ import { RolesModule } from './roles/roles.module';
       port: parseInt(process.env.HOST + ''),
       database: process.env.DATABASE,
       dialect: 'mysql',
-      models: [Articles],
+      models: [Articles, Users, Roles],
       autoLoadModels: true,
-      synchronize: true,
     }),
     UsersModule,
     AuthModule,

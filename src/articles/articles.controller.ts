@@ -14,16 +14,19 @@ import Page from 'src/dto/page.dto';
 import Articles from './articles.model';
 import { ArticlesService } from './articles.service';
 import ArticlesDto from './dto/articles.dto';
-import JwtGuard from 'src/auth/jwt-auth.guard';
+import JwtGuard from 'src/authentication/jwt-auth.guard';
 import { InternalServerErrorException } from '@nestjs/common';
 import { Response } from 'express';
+import { Role } from 'src/authorization/role.decorator';
+import { RolesGuard } from 'src/authorization/roles.guard';
 
-@UseGuards(JwtGuard)
+@UseGuards(JwtGuard, RolesGuard)
 @Controller('api/articles')
 export class ArticlesController {
   constructor(private readonly service: ArticlesService) {}
 
   @Get()
+  @Role('user')
   async getAll(
     @Query('offset') offset: string,
     @Query('limit') limit: string,
@@ -55,6 +58,7 @@ export class ArticlesController {
   }
 
   @Post()
+  @Role('admin')
   async save(@Body() request: ArticlesDto): Promise<ArticlesDto> {
     try {
       const articleSaved: Articles = await this.service.save(request);
@@ -73,6 +77,7 @@ export class ArticlesController {
   }
 
   @Put(':id')
+  @Role('admin')
   async update(
     @Body() request: ArticlesDto,
     @Param('id') id: number,
@@ -94,6 +99,7 @@ export class ArticlesController {
   }
 
   @Delete(':id')
+  @Role('admin')
   async delete(@Param('id') id: number, @Res() res: Response): Promise<void> {
     try {
       await this.service.delete(id);
